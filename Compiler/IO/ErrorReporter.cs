@@ -1,4 +1,5 @@
-﻿using static System.Console;
+﻿using System.Collections.Generic;
+using static System.Console;
 
 namespace Compiler.IO
 {
@@ -18,13 +19,29 @@ namespace Compiler.IO
         public bool HasErrors { get { return ErrorCount > 0; } }
 
         /// <summary>
+        /// The errors encountered so far
+        /// </summary>
+        public Dictionary<Position, string> Errors { get; private set; } = new Dictionary<Position, string>();
+
+        /// <summary>
         /// Reports an error
         /// </summary>
         /// <param name="message">The message to display</param>
-        public void ReportError(string message)
+        public void ReportError(Position position, string message)
         {
             ErrorCount += 1;
+            Errors.Add(position, message);
             WriteLine($"ERROR: {message}");
+        }
+
+        public string FinalReport()
+        {
+            string finalReport = "";
+            foreach (KeyValuePair<Position, string> error in Errors)
+            {
+                finalReport += $"{error.Key}: {error.Value}\n";
+            }
+            return finalReport;
         }
     }
 }

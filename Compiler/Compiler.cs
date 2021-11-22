@@ -58,7 +58,11 @@ namespace Compiler
         /// </summary>
         private void WriteFinalMessage()
         {
-            // You need to fill this in with your own success/error report
+            if (Reporter.HasErrors)
+            {
+                Write("Compilation failed. Errors:\n");
+                Write(Reporter.FinalReport());
+            }
         }
 
         /// <summary>
