@@ -1,0 +1,15 @@
+$this is an example program
+let
+	MAX ~ 10,
+	num: Integer
+in
+	begin
+		getint(var num),
+		if num > 0 && num < MAX then
+			while num > 0 do
+				begin
+					putint(num), puteol(),
+					num becomes num-1
+				end
+		else nothing
+	end

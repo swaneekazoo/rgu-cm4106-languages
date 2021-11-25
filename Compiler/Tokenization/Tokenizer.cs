@@ -178,7 +178,7 @@ namespace Compiler.Tokenization
                 }
                 else
                 {
-                    Reporter.ReportError(Reader.CurrentPosition, "Unclosed char literal");
+                    Reporter.ReportError(Reader.CurrentPosition, "Unclosed character literal");
                     return TokenType.Error;
                 }
             }
