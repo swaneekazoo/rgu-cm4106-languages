@@ -1,4 +1,5 @@
 ﻿using Compiler.IO;
+using Compiler.Nodes;
 using Compiler.Tokenization;
 using System.Collections.Generic;
 using System.IO;
@@ -57,9 +58,11 @@ namespace Compiler
 
             // Parse
             Write("Parsing...\n");
-            Parser.Parse(tokens);
+            ProgramNode tree = Parser.Parse(tokens);
             if (Reporter.HasErrors) return;
             WriteLine("Done");
+            
+            WriteLine(TreePrinter.ToString(tree));
         }
 
         /// <summary>

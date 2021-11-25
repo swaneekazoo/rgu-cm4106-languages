@@ -5,4 +5,9 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Compile Remove="Tokenization\Compiler9.cs" />
+      <Compile Remove="Tokenization\Parser9.cs" />
+    </ItemGroup>
+
 </Project>
