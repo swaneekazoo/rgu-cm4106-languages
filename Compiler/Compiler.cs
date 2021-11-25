@@ -2,6 +2,7 @@
 using Compiler.Tokenization;
 using System.Collections.Generic;
 using System.IO;
+using Compiler.SyntacticAnalysis;
 using static System.Console;
 
 namespace Compiler
@@ -25,6 +26,11 @@ namespace Compiler
         /// The tokenizer
         /// </summary>
         public Tokenizer Tokenizer { get; }
+        
+        /// <summary>
+        /// The parser
+        /// </summary>
+        public Parser Parser { get; }
 
         /// <summary>
         /// Creates a new compiler
@@ -35,6 +41,7 @@ namespace Compiler
             Reporter = new ErrorReporter();
             Reader = new FileReader(inputFile);
             Tokenizer = new Tokenizer(Reader, Reporter);
+            Parser = new Parser(Reporter);
         }
 
         /// <summary>
@@ -48,7 +55,11 @@ namespace Compiler
             if (Reporter.HasErrors) return;
             WriteLine("Done");
 
-            WriteLine(string.Join("\n", tokens));
+            // Parse
+            Write("Parsing...");
+            Parser.Parse(tokens);
+            if (Reporter.HasErrors) return;
+            WriteLine("Done");
         }
 
         /// <summary>
@@ -70,7 +81,7 @@ namespace Compiler
         /// <summary>
         /// Compiles the code in a file
         /// </summary>
-        /// <param name="args">Should be three arguments - input file (*.tri), binary output file (*.tam), text output file (*.txt)</param>
+        /// <param name="args">Should be one argument, the input file (*.tri)</param>
         public static void Main(string[] args)
         {
             if (args == null || args.Length != 1 || args[0] == null)
