@@ -12,6 +12,6 @@ in
 						putint(num), puteol(), nothing,
 						num becomes num+1
 					end
-			else
-		else
+			else nothing
+		else nothing
 	end

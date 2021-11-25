@@ -59,6 +59,10 @@ namespace Compiler.SyntacticAnalysis
                 Debugger.Write($"Accepted {CurrentToken}");
                 MoveNext();
             }
+            else
+            {
+                Reporter.ReportError(CurrentToken.Position, $"Unexpected token '{CurrentToken.Spelling}'");
+            }
         }
 
         /// <summary>
@@ -69,6 +73,8 @@ namespace Compiler.SyntacticAnalysis
         {
             this.tokens = tokens;
             ParseProgram();
+            if (currentIndex < tokens.Count - 1)
+                Reporter.ReportError(CurrentToken.Position, "Program parsed but tokens remain");
         }
 
 
@@ -91,9 +97,9 @@ namespace Compiler.SyntacticAnalysis
         {
             Debugger.Write("Parsing command");
             ParseSingleCommand();
-            while (CurrentToken.Type == Semicolon)
+            while (CurrentToken.Type == Comma)
             {
-                Accept(Semicolon);
+                Accept(Comma);
                 ParseSingleCommand();
             }
         }
@@ -107,6 +113,9 @@ namespace Compiler.SyntacticAnalysis
             switch (CurrentToken.Type)
             {
                 // There are missing cases here - you'll need to fill them all in
+                case Nothing:
+                    ParseBlankCommand();
+                    break;
                 case Identifier:
                     ParseAssignmentOrCallCommand();
                     break;
@@ -122,7 +131,19 @@ namespace Compiler.SyntacticAnalysis
                 case While:
                     ParseWhileCommand();
                     break;
+                default:
+                    Reporter.ReportError(CurrentToken.Position, $"Unexpected token type {CurrentToken.Type}");
+                    break;
             }
+        }
+
+        /// <summary>
+        /// Parses a blank command
+        /// </summary>
+        private void ParseBlankCommand()
+        {
+            Debugger.Write("Parsing Blank Command");
+            Accept(Nothing);
         }
 
         /// <summary>
@@ -145,6 +166,10 @@ namespace Compiler.SyntacticAnalysis
                 Accept(Becomes);
                 ParseExpression();
             }
+            else
+            {
+                Reporter.ReportError(CurrentToken.Position, $"Unexpected token type {CurrentToken.Type}");
+            }
         }
 
         /// <summary>
@@ -165,9 +190,19 @@ namespace Compiler.SyntacticAnalysis
         {
             Debugger.Write("Parsing While Command");
             Accept(While);
-            ParseExpression();
-            Accept(Do);
-            ParseSingleCommand();
+            if (CurrentToken.Type == Forever)
+            {
+                Debugger.Write("Parsing Forever Command");
+                Accept(Forever);
+                Accept(Do);
+                ParseSingleCommand();
+            }
+            else
+            {
+                ParseExpression();
+                Accept(Do);
+                ParseSingleCommand();
+            }
         }
 
         /// <summary>
@@ -268,13 +303,16 @@ namespace Compiler.SyntacticAnalysis
                     ParseCharExpression();
                     break;
                 case Identifier:
-                    ParseIdExpression();
+                    ParseIdOrCallExpression();
                     break;
                 case Operator:
                     ParseUnaryExpression();
                     break;
                 case LeftBracket:
                     ParseBracketExpression();
+                    break;
+                default:
+                    Reporter.ReportError(CurrentToken.Position, $"Token type mismatch: {CurrentToken.Type}");
                     break;
             }
         }
@@ -298,12 +336,19 @@ namespace Compiler.SyntacticAnalysis
         }
 
         /// <summary>
-        /// Parses an ID expression
+        /// Parses an ID expression or call expression
         /// </summary>
-        private void ParseIdExpression()
+        private void ParseIdOrCallExpression()
         {
             Debugger.Write("Parsing Call Expression or Identifier Expression");
             ParseIdentifier();
+            if (CurrentToken.Type == LeftBracket)
+            {
+                Debugger.Write("Parsing Call Expression");
+                Accept(LeftBracket);
+                ParseParameter();
+                Accept(LeftBracket);
+            }
         }
 
         /// <summary>
@@ -336,9 +381,9 @@ namespace Compiler.SyntacticAnalysis
         {
             Debugger.Write("Parsing Declaration");
             ParseSingleDeclaration();
-            while (CurrentToken.Type == Semicolon)
+            while (CurrentToken.Type == Comma)
             {
-                Accept(Semicolon);
+                Accept(Comma);
                 ParseSingleDeclaration();
             }
         }
@@ -349,15 +394,17 @@ namespace Compiler.SyntacticAnalysis
         private void ParseSingleDeclaration()
         {
             Debugger.Write("Parsing Single Declaration");
+            ParseIdentifier();
             switch (CurrentToken.Type)
             {
-                case Const:
+                case Is:
                     ParseConstDeclaration();
                     break;
-                case Var:
+                case Colon:
                     ParseVarDeclaration();
                     break;
                 default:
+                    Reporter.ReportError(CurrentToken.Position, $"Unexpected token type {CurrentToken.Type}");
                     break;
             }
         }
@@ -368,8 +415,6 @@ namespace Compiler.SyntacticAnalysis
         private void ParseConstDeclaration()
         {
             Debugger.Write("Parsing Constant Declaration");
-            Accept(Const);
-            ParseIdentifier();
             Accept(Is);
             ParseExpression();
         }
@@ -380,8 +425,6 @@ namespace Compiler.SyntacticAnalysis
         private void ParseVarDeclaration()
         {
             Debugger.Write("Parsing Variable Declaration");
-            Accept(Var);
-            ParseIdentifier();
             Accept(Colon);
             ParseTypeDenoter();
         }
