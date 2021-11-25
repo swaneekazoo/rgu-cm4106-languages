@@ -15,10 +15,10 @@ namespace Compiler.Tokenization
         IntLiteral, Identifier, Operator, CharLiteral, 
 
         // reserved words - terminals
-        Begin, Const, Do, Else, End, If, In, Let, Then, Var, While,
+        Begin, Do, Else, End, If, In, Let, Then, Var, While, Nothing, Forever, For,
 
         // punctuation - terminals (Becomes is for assignment (:=) , Is is for constants (~))
-        Colon, Semicolon, Becomes, Is, LeftBracket, RightBracket,
+        Colon, Comma, Becomes, Is, LeftBracket, RightBracket,
 
         // special tokens
         EndOfText, Error
@@ -35,7 +35,6 @@ namespace Compiler.Tokenization
         public static ImmutableDictionary<string, TokenType> Keywords { get; } = new Dictionary<string, TokenType>()
         {
             { "begin", Begin },
-            { "const", Const },
             { "do", Do },
             { "else", Else },
             { "end", End },
@@ -45,6 +44,10 @@ namespace Compiler.Tokenization
             { "then", Then },
             { "var", Var },
             { "while", While },
+            { "becomes", Becomes },
+            { "nothing", Nothing },
+            { "forever", Forever },
+            { "for", For }
         }.ToImmutableDictionary();
 
         /// <summary>

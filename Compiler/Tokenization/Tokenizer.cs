@@ -87,9 +87,9 @@ namespace Compiler.Tokenization
         /// </summary>
         private void SkipSeparators()
         {
-            while (Reader.Current == '!' || IsWhiteSpace(Reader.Current))
+            while (Reader.Current == '$' || IsWhiteSpace(Reader.Current))
             {
-                if (Reader.Current == '!')
+                if (Reader.Current == '$')
                     Reader.SkipRestOfLine();
                 else
                     Reader.MoveNext();
@@ -110,6 +110,11 @@ namespace Compiler.Tokenization
                 TakeIt();
                 while (char.IsLetterOrDigit(Reader.Current))
                     TakeIt();
+                if (TokenSpelling.Length < 2)
+                {
+                    Reporter.ReportError(Reader.CurrentPosition, "Identifier must comprise 2 or more letters or digits");
+                    return TokenType.Error;
+                }
                 if (TokenTypes.IsKeyword(TokenSpelling))
                     return TokenTypes.GetTokenForKeyword(TokenSpelling);
                 else
@@ -132,23 +137,14 @@ namespace Compiler.Tokenization
             else if (Reader.Current == ':')
             {
                 // Read an :
-                // Is it a : or a :=
                 TakeIt();
-                if (Reader.Current == '=')
-                {
-                    TakeIt();
-                    return TokenType.Becomes;
-                }
-                else
-                {
-                    return TokenType.Colon;
-                }
+                return TokenType.Colon;
             }
-            else if (Reader.Current == ';')
+            else if (Reader.Current == ',')
             {
-                // Read a ;
+                // Read a ,
                 TakeIt();
-                return TokenType.Semicolon;
+                return TokenType.Comma;
             }
             else if (Reader.Current == '~')
             {
@@ -168,21 +164,21 @@ namespace Compiler.Tokenization
                 TakeIt();
                 return TokenType.RightBracket;
             }
-            else if (Reader.Current == '\'')
+            else if (Reader.Current == '\"')
             {
                 // Read a '
                 TakeIt();
                 // Take whatever the character is
                 TakeIt();
                 // Try getting the closing '
-                if (Reader.Current == '\'')
+                if (Reader.Current == '\"')
                 {
                     TakeIt();
                     return TokenType.CharLiteral;
                 }
                 else
                 {
-                    // Could do some better error handling here but we weren't asked to
+                    Reporter.ReportError(Reader.CurrentPosition, "Unclosed char literal");
                     return TokenType.Error;
                 }
             }
@@ -195,6 +191,7 @@ namespace Compiler.Tokenization
             else
             {
                 // Encountered a character we weren't expecting
+                Reporter.ReportError(Reader.CurrentPosition, $"Unexpected character {Reader.Current}");
                 TakeIt();
                 return TokenType.Error;
             }
